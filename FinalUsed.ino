@@ -5,6 +5,12 @@
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 
+/* The basic use of the gyroscope was deployed following the tutorial for GY-521 
+ * https://olivertechnologydevelopment.wordpress.com/2017/08/17/esp8266-sensor-series-gy-521-imu-part-1/
+ * The pieces of code (some modified) I have marked with comments *Gyroscope* and *Gyroscope end*
+ */
+
+
 
 /* Gyroscope */
 const uint8_t MPU_addr=0x69; // I2C address of the MPU-6050
@@ -27,7 +33,8 @@ int16_t GyX;
 int16_t GyY;
 int16_t GyZ;
 };
- 
+
+/*Some modification*/
 struct scaleddata{
 float AcXOld;
 float AcYOld;
@@ -106,9 +113,9 @@ void setup() {
   timeClient.begin();
   timeClient.setTimeOffset(3600);  //GMT +1 Amsterdam local time
 
-  /*Gyro */
+  /*Gyroscope */
   mpu6050Begin(MPU_addr);
-  /*Gyro end*/
+  /*Gyroscope end*/
   
 }
 
@@ -130,11 +137,13 @@ void measure() {
   while (millis() - previousMillis < ending){
     check_time();
 
+    /*Gyroscope*/
     rawdata next_sample;
     setMPU6050scales(MPU_addr,0b00000000,0b00010000);
     next_sample = mpu6050Read(MPU_addr, true);
     convertRawToScaled(MPU_addr, next_sample,true);
     scaleddata convertRawToScaled(byte addr, rawdata data_in,bool Debug); 
+    /*Gyroscope end*/
     
     if (triggered){
       message = "triggered";
@@ -284,7 +293,7 @@ void receiveOOCSI() {
   } 
 }
 
-/*GYRO*/
+/*Gyroscope*/
 void mpu6050Begin(byte addr){
 // This function initializes the MPU-6050 IMU Sensor
 // It verifys the address is correct and wakes up the
@@ -447,7 +456,8 @@ scaleddata convertRawToScaled(byte addr, rawdata data_in, bool Debug){
     default:
     break;
   }
- 
+
+ /*Modified tutorial*/
   if( valuesOld.AcX == NULL || counter == false) {
     values.AcXOld=(float) data_in.AcX / scale_value;
     counter = true;
@@ -484,6 +494,8 @@ scaleddata convertRawToScaled(byte addr, rawdata data_in, bool Debug){
       Serial.print(" else difference  : ");
     }
 
+    /*End of modification*/
+
   values.Tmp = (float) data_in.Tmp / 340.0 + 36.53;
    
   if(Debug){
@@ -494,4 +506,4 @@ scaleddata convertRawToScaled(byte addr, rawdata data_in, bool Debug){
 
   return values;
 }
-/*GYRO end*/
+/*Gyroscope end*/
